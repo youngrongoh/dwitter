@@ -43,17 +43,20 @@ export async function create(text, name, username) {
     username,
   };
 
-  return [tweet, ...tweets];
+  tweets = [tweet, ...tweets];
+  return tweet;
 }
 
 export async function update(id, text) {
   const tweet = tweets.find((tweet) => tweet.id === id);
+
   if (tweet) {
     tweet.text = text;
   }
+
   return tweet;
 }
 
 export async function remove(id) {
-  return tweets.filter((tweet) => tweet.id !== id);
+  tweets = tweets.filter((tweet) => tweet.id !== id);
 }
