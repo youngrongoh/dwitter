@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import 'express-async-errors';
-import * as userRepository from '../data/auth.js'
+import * as userRepository from '../data/auth.js';
 
 // Secrets
 const jwtSecretKey = 'F2faSfd3aSASef3F32ZfghAzx5Vds';
@@ -23,8 +23,8 @@ export async function signup(req, res) {
     url,
   });
   const token = createJwtToken(userId);
-  res.status(200).json({token, username});
-};
+  res.status(200).json({ token, username });
+}
 
 export async function login(req, res) {
   const { username, password } = req.body;
@@ -38,7 +38,7 @@ export async function login(req, res) {
   }
   const token = createJwtToken(user.id);
   res.status(200).json({ token, username });
-};
+}
 
 export async function me(req, res) {
   const user = await userRepository.findById(req.userId);
@@ -48,6 +48,6 @@ export async function me(req, res) {
   res.status(200).json({ token: req.token, username: user.username });
 }
 
-function createJwtToken (id) {
-  return jwt.sign({ id }, jwtSecretKey, {expiresIn: jwtExpiresInDays});
+function createJwtToken(id) {
+  return jwt.sign({ id }, jwtSecretKey, { expiresIn: jwtExpiresInDays });
 }

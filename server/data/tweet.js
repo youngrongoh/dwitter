@@ -1,50 +1,58 @@
+import * as userRepository from './auth.js';
+
 let tweets = [
   {
     id: '123',
     text: 'tweet message1',
-    username: 'user1',
-    name: 'tom',
+    userId: '1',
     createdAt: new Date('2021-06-01').toString(),
   },
   {
     id: '124',
     text: 'tweet message2',
-    username: 'user2',
-    name: 'bob',
+    userId: '1',
     createdAt: new Date('2021-06-15').toString(),
   },
   {
     id: '125',
     text: 'tweet message3',
-    username: 'user3',
-    name: 'anne',
+    userId: '1',
     createdAt: new Date('2021-05-15').toString(),
   },
 ];
 
 export async function getAll() {
-  return tweets;
+  return Promise.all(
+    tweets.map(async (tweet) => {
+      const { username, name, url } = await userRepository.findById(tweet.userId);
+      return { ...tweet, username, name, url };
+    })
+  );
 }
 
 export async function getAllByUsername(username) {
-  return tweets.filter((tweet) => tweet.username === username);
+  return getAll().then((tweets) => tweets.filter((tweet) => tweet.username === username));
 }
 
 export async function getById(id) {
-  return tweets.find((tweet) => tweet.id === id);
+  const found = tweets.find((tweet) => tweet.id === id);
+  if (!found) {
+    return null;
+  }
+  const { username, name, url } = await userRepository.findById(found.userId);
+  return { ...found, username, name, url };
 }
 
-export async function create(text, name, username) {
+export async function create(text, userId) {
   const tweet = {
     id: Date.now().toString(),
     text,
     createAt: new Date(),
-    name,
-    username,
+    userId,
   };
 
   tweets = [tweet, ...tweets];
-  return tweet;
+  return getById(tweet.id);
 }
 
 export async function update(id, text) {
@@ -54,7 +62,7 @@ export async function update(id, text) {
     tweet.text = text;
   }
 
-  return tweet;
+  return getById(tweet.id);
 }
 
 export async function remove(id) {
