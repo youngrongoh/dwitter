@@ -1,8 +1,8 @@
 let users = [
   {
     id: '1',
-    username: 'bob123',
-    password: 'bobbob',
+    username: 'bob',
+    password: '$2b$12$aXm3u3qrjGY6azkLtCLe5.6FlZ3gHnCYPpOsOjOUBqco8yR6a//k.',
     name: 'bob',
     email: 'bob123@gmail.com',
     url: 'https://widgetwhats.com/app/upload/2019/11/free-profile-photo-whatsapp-1.png',

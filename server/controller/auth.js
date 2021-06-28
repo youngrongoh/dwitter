@@ -28,7 +28,9 @@ export async function signup(req, res) {
 
 export async function login(req, res) {
   const { username, password } = req.body;
+  const hashed = await bcrypt.hash(password, bcryptSaltRound);
   const user = await userRepository.findByUsername(username);
+  console.log(hashed);
   if (!user) {
     return res.status(401).json({ message: 'Invalid user or password' });
   }
