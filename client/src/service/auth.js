@@ -1,50 +1,36 @@
 export default class AuthService {
-  constructor(http) {
+  constructor(http, tokenStorage) {
     this.http = http;
-    this.server = process.env.REACT_APP_BASE_URL;
+    this.tokenStorage = tokenStorage;
   }
   async signup(username, password, name, email, url) {
-    const user = await this.http.fetch('/auth/signup', {
+    const data = await this.http.fetch('/auth/signup', {
       method: 'POST',
-      headers: {
-        'Access-Control-Allow-Origin': this.server,
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ username, password, name, email, url }),
     });
-    sessionStorage.setItem('token', 'Bearer ' + user.token);
-    console.log(user);
-    return user;
+    this.tokenStorage.saveToken(data.token);
+    return data;
   }
 
   async login(username, password) {
-    const user = await this.http.fetch('/auth/login', {
+    const data = await this.http.fetch('/auth/login', {
       method: 'POST',
-      headers: {
-        'Access-Control-Allow-Origin': this.server,
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ username, password }),
     });
-    sessionStorage.setItem('token', 'Bearer ' + user.token);
-    return user;
+    this.tokenStorage.saveToken(data.token);
+    return data;
   }
 
   async me() {
-    const token = sessionStorage.getItem('token');
-    if (!token) return;
-    const user = await this.http.fetch('/auth/me', {
+    const token = this.tokenStorage.getToken();
+    return await this.http.fetch('/auth/me', {
       method: 'POST',
-      headers: {
-        'Access-Control-Allow-Origin': this.server,
-        Authorization: token,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     });
-    return user;
   }
 
   async logout() {
-    sessionStorage.removeItem('token');
+    this.tokenStorage.clearToken();
     return;
   }
 }

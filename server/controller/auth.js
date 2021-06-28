@@ -5,7 +5,7 @@ import * as userRepository from '../data/auth.js';
 
 // Secrets
 const jwtSecretKey = 'F2faSfd3aSASef3F32ZfghAzx5Vds';
-const jwtExpiresInDays = '2d';
+const jwtExpiresInDays = '1d';
 const bcryptSaltRound = 12;
 
 export async function signup(req, res) {
