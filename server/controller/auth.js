@@ -2,11 +2,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import 'express-async-errors';
 import * as userRepository from '../data/auth.js';
-
-// Secrets
-const jwtSecretKey = 'F2faSfd3aSASef3F32ZfghAzx5Vds';
-const jwtExpiresInDays = '1d';
-const bcryptSaltRound = 12;
+import { config } from '../config.js';
 
 export async function signup(req, res) {
   const { username, password, name, email, url } = req.body;
@@ -14,7 +10,7 @@ export async function signup(req, res) {
   if (found) {
     return res.status(409).json({ message: `${username} already exites` });
   }
-  const hashed = await bcrypt.hash(password, bcryptSaltRound);
+  const hashed = await bcrypt.hash(password, config.bcrypt.bcryptSaltRound);
   const userId = await userRepository.createUser({
     username,
     password: hashed,
@@ -51,5 +47,5 @@ export async function me(req, res) {
 }
 
 function createJwtToken(id) {
-  return jwt.sign({ id }, jwtSecretKey, { expiresIn: jwtExpiresInDays });
+  return jwt.sign({ id }, config.jwt.secretKey, { expiresIn: config.jwt.expiresInSec });
 }
