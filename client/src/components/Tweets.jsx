@@ -11,32 +11,30 @@ const Tweets = memo(({ tweetService, username, addable }) => {
   const history = useHistory();
   const { user } = useAuth();
 
+  const onCreated = (tweet) => {
+    setTweets((tweets) => [tweet, ...tweets]);
+  };
+
   useEffect(() => {
     tweetService
       .getTweets(username)
       .then((tweets) => setTweets([...tweets]))
       .catch(onError);
+    const stopSync = tweetService.onSync((tweet) => onCreated(tweet));
+    return () => stopSync();
   }, [tweetService, username, user]);
-
-  const onCreated = (tweet) => {
-    setTweets((tweets) => [tweet, ...tweets]);
-  };
 
   const onDelete = (tweetId) =>
     tweetService
       .deleteTweet(tweetId)
-      .then(() =>
-        setTweets((tweets) => tweets.filter((tweet) => tweet.id !== tweetId))
-      )
+      .then(() => setTweets((tweets) => tweets.filter((tweet) => tweet.id !== tweetId)))
       .catch((error) => setError(error.toString()));
 
   const onUpdate = (tweetId, text) =>
     tweetService
       .updateTweet(tweetId, text)
       .then((updated) =>
-        setTweets((tweets) =>
-          tweets.map((item) => (item.id === updated.id ? updated : item))
-        )
+        setTweets((tweets) => tweets.map((item) => (item.id === updated.id ? updated : item)))
       )
       .catch((error) => error.toString());
 
@@ -51,16 +49,10 @@ const Tweets = memo(({ tweetService, username, addable }) => {
 
   return (
     <>
-      {addable && (
-        <NewTweetForm
-          tweetService={tweetService}
-          onError={onError}
-          onCreated={onCreated}
-        />
-      )}
+      {addable && <NewTweetForm tweetService={tweetService} onError={onError} />}
       {error && <Banner text={error} isAlert={true} transient={true} />}
-      {tweets.length === 0 && <p className='tweets-empty'>No Tweets Yet</p>}
-      <ul className='tweets'>
+      {tweets.length === 0 && <p className="tweets-empty">No Tweets Yet</p>}
+      <ul className="tweets">
         {tweets.map((tweet) => (
           <TweetCard
             key={tweet.id}

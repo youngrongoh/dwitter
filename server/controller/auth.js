@@ -10,7 +10,7 @@ export async function signup(req, res) {
   if (found) {
     return res.status(409).json({ message: `${username} already exites` });
   }
-  const hashed = await bcrypt.hash(password, config.bcrypt.bcryptSaltRound);
+  const hashed = await bcrypt.hash(password, config.bcrypt.saltRound);
   const userId = await userRepository.createUser({
     username,
     password: hashed,
@@ -24,7 +24,7 @@ export async function signup(req, res) {
 
 export async function login(req, res) {
   const { username, password } = req.body;
-  const hashed = await bcrypt.hash(password, bcryptSaltRound);
+  const hashed = await bcrypt.hash(password, config.bcrypt.saltRound);
   const user = await userRepository.findByUsername(username);
   console.log(hashed);
   if (!user) {
