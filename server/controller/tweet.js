@@ -32,6 +32,7 @@ export async function updateTweet(req, res) {
   const id = req.params.id;
   const { text } = req.body;
   const tweet = await tweetRepository.getById(id);
+  console.log(req.userId);
   if (!tweet) {
     return res.sendStatus(404);
   }
