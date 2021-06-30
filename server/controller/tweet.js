@@ -6,7 +6,6 @@ export async function getTweets(req, res) {
   const data = await (username
     ? tweetRepository.getAllByUsername(username)
     : tweetRepository.getAll());
-  console.log(req.userId);
   res.status(200).json(data);
 }
 
@@ -32,7 +31,7 @@ export async function updateTweet(req, res) {
   const id = req.params.id;
   const { text } = req.body;
   const tweet = await tweetRepository.getById(id);
-  console.log(req.userId);
+
   if (!tweet) {
     return res.sendStatus(404);
   }
