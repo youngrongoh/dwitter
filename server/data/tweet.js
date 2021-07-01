@@ -1,81 +1,56 @@
-import SQ from 'sequelize';
-import { sequelize } from '../db/database.js';
-import { User } from './auth.js';
+import MongoDB from 'mongodb';
+import { getTweets } from '../db/database.js';
+import * as userRepository from './auth.js';
 
-const DataTypes = SQ.DataTypes;
-const Sequelize = SQ.Sequelize;
-
-const Tweet = sequelize.define('tweet', {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    allowNull: false,
-    primaryKey: true,
-  },
-  text: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-  },
-});
-
-Tweet.belongsTo(User);
-
-const INCLUDE_USER = {
-  attributes: [
-    'id',
-    'text',
-    'createdAt',
-    'userId',
-    [Sequelize.col('user.name'), 'name'],
-    [Sequelize.col('user.username'), 'username'],
-    [Sequelize.col('user.url'), 'url'],
-  ],
-  include: {
-    model: User,
-    attributes: [],
-  },
-};
-
-const ORDER_DESC = { order: [['createdAt', 'DESC']] };
+const ObjectID = MongoDB.ObjectID;
 
 export async function getAll() {
-  return await Tweet.findAll({ ...INCLUDE_USER, ...ORDER_DESC });
+  return getTweets().find().sort({ createdAt: -1 }).toArray().then(mapTweets);
 }
 
 export async function getAllByUsername(username) {
-  return await Tweet.findAll({
-    ...INCLUDE_USER,
-    ...ORDER_DESC,
-    include: {
-      ...INCLUDE_USER.include,
-      where: { username },
-    },
-  });
+  return getTweets().find({ username }).sort({ createdAt: -1 }).toArray().then(mapTweets);
 }
 
 export async function getById(id) {
-  return await Tweet.findOne({
-    where: { id },
-    ...INCLUDE_USER,
-  });
+  return getTweets()
+    .find({ _id: new ObjectID(id) })
+    .next()
+    .then(mapOptionalTweet);
 }
 
 export async function create(text, userId) {
-  return Tweet.create({ text, userId }) //
-    .then((data) => this.getById(data.dataValues.id));
+  return userRepository
+    .findById(userId)
+    .then((user) =>
+      getTweets().insertOne({
+        text,
+        createdAt: new Date(),
+        userId,
+        name: user.name,
+        username: user.username,
+        url: user.url,
+      })
+    )
+    .then((result) => result.ops[0])
+    .then(mapOptionalTweet);
 }
 
 export async function update(id, text) {
-  return Tweet.findByPk(id, INCLUDE_USER) //
-    .then((tweet) => {
-      tweet.text = text;
-      return tweet.save();
-    });
+  return getTweets()
+    .findOneAndUpdate({ _id: new ObjectID(id) }, { $set: { text } }, { returnOriginal: false })
+    .then((result) => result.value)
+    .then(mapOptionalTweet);
 }
 
 export async function remove(id) {
-  return Tweet.findByPk(id) //
-    .then((tweet) => {
-      tweet.destroy();
-    });
+  return getTweets().deleteOne({ _id: new ObjectID(id) });
+}
+
+function mapTweets(tweets) {
+  return tweets.map((tweet) => ({ ...tweet, id: tweet._id.toString() }));
+}
+
+function mapOptionalTweet(tweet) {
+  return tweet ? { ...tweet, id: tweet._id.toString() } : tweet;
 }

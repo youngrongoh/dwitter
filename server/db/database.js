@@ -1,10 +1,20 @@
-import SQ from 'sequelize';
+import MongoDB from 'mongodb';
 import { config } from '../config.js';
 
-const { host, user, database, password } = config.db;
+let db;
+export function connectDB() {
+  return MongoDB.MongoClient.connect(config.db.host, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }).then((client) => {
+    db = client.db();
+  });
+}
 
-export const sequelize = new SQ.Sequelize(database, user, password, {
-  host,
-  dialect: 'mysql',
-  logging: false,
-});
+export function getUsers() {
+  return db.collection('users');
+}
+
+export function getTweets() {
+  return db.collection('tweets');
+}
